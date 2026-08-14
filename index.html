@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bedrockmatica - Litematica to Bedrock Converter</title>
+  <meta name="description"
+    content="Chuyển đổi file .litematic sang Bedrock .mcaddon cho Minecraft Bedrock 1.21.1+ trực tiếp trên trình duyệt." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+
+<body>
+
+  <!-- Cyber Grid Background -->
+  <div class="cyber-grid"></div>
+
+  <!-- Main macOS Glass Window -->
+  <div class="window" id="main-window">
+
+    <!-- Title bar (macOS frosted glass style with retro neon accents) -->
+    <div class="titlebar">
+      <div class="traffic-lights">
+        <span class="tl red" title="Close"></span>
+        <span class="tl yellow" title="Minimize"></span>
+        <span class="tl green" title="Maximize"></span>
+      </div>
+      <div class="window-title-container">
+        <span class="window-title">Bedrockmatica</span>
+        <span class="neon-badge">1.21.1 trở lên</span>
+      </div>
+      <div class="titlebar-actions">
+        <span class="status-pill online">
+          <span class="dot"></span> Client-Side
+        </span>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content">
+
+      <!-- Hidden File Input -->
+      <input type="file" id="file-input" accept=".litematic" hidden />
+
+      <!-- STATE 1: IDLE / DROP ZONE -->
+      <div id="idle-card" class="state-card">
+        <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload Litematic File">
+          <div class="drop-icon-wrapper">
+            <svg class="drop-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </div>
+          <div class="drop-text-group">
+            <p class="drop-title">Kéo thả file <code class="cyber-code">.litematic</code> vào đây</p>
+            <p class="drop-sub">hoặc <button id="browse-btn" class="neon-link-btn" type="button">chọn file từ
+                máy</button></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE 2: PROGRESS CONVERTING -->
+      <div id="progress-card" class="state-card hidden">
+        <div class="progress-box">
+          <div class="progress-spinner-wrapper">
+            <div class="neon-ring"></div>
+            <div class="spinner-core"></div>
+            <span id="progress-pct" class="progress-pct-text">0%</span>
+          </div>
+          <div class="progress-info">
+            <p id="progress-status" class="progress-status-text">Đang phân tích</p>
+            <div class="progress-track">
+              <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <p class="progress-sub-text">Đang tạo gói và điều chỉnh block id</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE 3: CONVERSION COMPLETE / PACK CONFIGURATION -->
+      <div id="done-card" class="state-card hidden">
+        <div class="result-box">
+
+          <!-- Header Success Badge -->
+          <div class="result-header">
+            <div class="success-icon-badge">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <div class="result-header-text">
+              <h3 class="result-title">Chuyển đổi thành công</h3>
+              <p class="result-subtitle">Sẵn sàng xuất gói Addon</p>
+            </div>
+          </div>
+
+          <!-- Pack Name Customization Section -->
+          <div class="pack-name-section">
+            <label for="pack-name-input" class="input-label">
+              <span>Tên addon sẽ hiển thị</span>
+              <span class="input-sub-hint">Có thể chỉnh sửa tên file .mcaddon</span>
+            </label>
+            <div class="input-wrapper">
+              <div class="input-prefix-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </div>
+              <input type="text" id="pack-name-input" class="neon-input" placeholder="Nhập tên addon..."
+                autocomplete="off" spellcheck="false" />
+              <span class="extension-pill">.mcaddon</span>
+            </div>
+          </div>
+
+          <!-- Schematic Info HUD (Clean Dimensions & Target Version) -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">KÍCH THƯỚC</span>
+              <span class="stat-value" id="stat-dimensions">0 × 0 × 0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">PHIÊN BẢN</span>
+              <span class="stat-value highlight-cyan" id="stat-palette">1.21.1</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="result-actions">
+            <button id="download-btn" class="btn-neon-primary" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Tải xuống .mcaddon</span>
+            </button>
+            <button id="reset-btn" class="btn-neon-ghost" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              <span>Chọn file litematica khác</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Quick Guide Section (macOS style with clear high-contrast text) -->
+      <div class="guide-panel">
+        <div class="guide-header">
+          <span class="guide-title">HƯỚNG DẪN SỬ DỤNG</span>
+          <span class="guide-badge">MCPE / BEDROCK</span>
+        </div>
+
+        <div class="steps-container">
+          <div class="step-item">
+            <div class="step-neon-num">01</div>
+            <div class="step-content">
+              <strong>Kéo thả & Tùy chỉnh tên</strong>
+              <p>Tải file <code>.litematic</code> của bạn lên, sau đó nhập tên mong muốn cho Addon rồi nhấn tải về.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-neon-num">02</div>
+            <div class="step-content">
+              <strong>Tải & Mở file .mcaddon</strong>
+              <p>Mở file <code>.mcaddon</code> vừa tải, Minecraft Bedrock sẽ tự động import vào game.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-neon-num">03</div>
+            <div class="step-content">
+              <strong>Kích hoạt trong World</strong>
+              <p>Vào cài đặt World rồi vào <em>Behavior Pack</em> sau đó thêm cái file vừa tải vào. Sau đó bật <em
+                  class="neon-text-cyan">Beta APIs</em>
+                trong phần Thử nghiệm (Experiments).</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-neon-num">04</div>
+            <div class="step-content">
+              <strong>Cách sử dụng</strong>
+              <p>Cầm <strong class="neon-text-pink">Stick</strong>, <strong class="neon-text-pink">Feather</strong> hoặc
+                <strong class="neon-text-pink">Compass</strong> nhấp chuột phải(đè/giữ vào màn hình điện thoại) để mở
+                menu, chọn <em>TP
+                  Mode</em> để bắt đầu, lưu ý là hãy bay lên 1 khoản và không di chuyển đến khi nó chạy xong.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+
+</html>
