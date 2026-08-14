@@ -258,5 +258,9 @@ function startSafe(player) {
 `;
 
   scriptsFolder.file("main.js", scriptContent);
-  return await zip.generateAsync({ type: "blob" });
+  return await zip.generateAsync({
+    type: "blob",
+    mimeType: "application/octet-stream"
+  });
 }
+

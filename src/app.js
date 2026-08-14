@@ -118,15 +118,16 @@ downloadBtn.addEventListener('click', async (e) => {
 
   if (!blobToDownload) return;
 
-  // Trigger browser download
-  const url = URL.createObjectURL(blobToDownload);
+  // Wrap in application/octet-stream MIME type to prevent mobile browsers (Android/iOS) from forcing .zip extension
+  const binaryBlob = new Blob([blobToDownload], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(binaryBlob);
   const a = document.createElement('a');
   a.href = url;
   a.download = `${safeFileName}.mcaddon`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 });
 
 resetBtn.addEventListener('click', (e) => {
