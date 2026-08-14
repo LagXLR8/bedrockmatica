@@ -32,9 +32,6 @@ function base64ToUint8Array(base64) {
 export async function buildBedrockAddon(schematicsName, subStructures) {
   const zip = new JSZip();
 
-  const safeName = schematicsName.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const packFolder = zip.folder(`bedrockmatica_${safeName}_bp`);
-
   const headerUUID = generateUUID();
   const moduleUUID = generateUUID();
 
@@ -67,10 +64,11 @@ export async function buildBedrockAddon(schematicsName, subStructures) {
     ]
   };
 
-  packFolder.file("manifest.json", JSON.stringify(manifest, null, 2));
-  packFolder.file("pack_icon.png", base64ToUint8Array(DEFAULT_PACK_ICON_BASE64));
+  // Place manifest and assets at ROOT level of the ZIP archive for standard .mcpack import
+  zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+  zip.file("pack_icon.png", base64ToUint8Array(DEFAULT_PACK_ICON_BASE64));
 
-  const structFolder = packFolder.folder("structures");
+  const structFolder = zip.folder("structures");
   const metaList = [];
 
   for (const s of subStructures) {
@@ -93,7 +91,7 @@ export const structuresData = ${JSON.stringify({
   }, null, 2)};
 `;
 
-  const scriptsFolder = packFolder.folder("scripts");
+  const scriptsFolder = zip.folder("scripts");
   scriptsFolder.file("structures-data.js", structuresDataJS);
 
   const scriptContent = `

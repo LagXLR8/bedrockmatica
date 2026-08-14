@@ -116,14 +116,12 @@ downloadBtn.addEventListener('click', async (e) => {
     }
   }
 
-  if (!blobToDownload) return;
-
-  // Wrap in application/octet-stream MIME type to prevent mobile browsers (Android/iOS) from forcing .zip extension
+  // Trigger browser download with .mcpack extension for instant Minecraft Bedrock import
   const binaryBlob = new Blob([blobToDownload], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(binaryBlob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${safeFileName}.mcaddon`;
+  a.download = `${safeFileName}.mcpack`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
