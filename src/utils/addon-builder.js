@@ -43,7 +43,7 @@ export async function buildBedrockAddon(schematicsName, subStructures, lang = 'v
     format_version: 2,
     header: {
       name: `Bedrockmatica - ${schematicsName}`,
-      description: isVi 
+      description: isVi
         ? `Gói Behavior Pack tự động xây công trình cho ${schematicsName}`
         : `Auto-generated Bedrockmatica structure builder pack for ${schematicsName}`,
       uuid: headerUUID,
@@ -138,13 +138,13 @@ function openBuildUI(player) {
   const body = LANG_VI
     ? "Schematic: " + structuresData.name +
       "\\nSố phần nhỏ: " + structuresData.totalStructures +
-      "\\n\\n⚡ TP Mode: Dịch chuyển bạn đến từng khu vực để load chunk (Khuyên dùng cho công trình lớn).\\n🛡️ Safe Mode: Không dịch chuyển, chỉ xây khu vực xung quanh bạn.\\n\\n§e⚠️ Lưu ý: Hãy đứng im cho đến khi load xong, đừng di chuyển. Tốc độ xử lý tùy thuộc vào cấu hình máy."
+      "\\n\\n TP Mode: Dịch chuyển bạn đến từng khu vực để load chunk (Khuyên dùng cho công trình lớn).\\n Safe Mode: Không dịch chuyển, chỉ xây khu vực xung quanh bạn.\\n\\n§e⚠️ Lưu ý: Hãy đứng im cho đến khi load xong, đừng di chuyển. Tốc độ xử lý tùy thuộc vào cấu hình máy."
     : "Schematic: " + structuresData.name +
       "\\nSub-Structures: " + structuresData.totalStructures +
-      "\\n\\n⚡ TP Mode: Teleports you to each section for guaranteed chunk loading (Recommended for large builds).\\n🛡️ Safe Mode: No teleport, only builds in your immediate area.\\n\\n§e⚠️ Note: Please stand completely still until loading is finished. Processing speed depends on device performance.";
+      "\\n\\n TP Mode: Teleports you to each section for guaranteed chunk loading (Recommended for large builds).\\n Safe Mode: No teleport, only builds in your immediate area.\\n\\n§e⚠️ Note: Please stand completely still until loading is finished. Processing speed depends on device performance.";
 
-  const btnTP = LANG_VI ? "⚡ TP Mode (Khuyên dùng)" : "⚡ TP Mode (Recommended)";
-  const btnSafe = LANG_VI ? "🛡️ Safe Mode (Công trình nhỏ / test)" : "🛡️ Safe Mode (Small builds / testing)";
+  const btnTP = LANG_VI ? " TP Mode (Khuyên dùng)" : " TP Mode (Recommended)";
+  const btnSafe = LANG_VI ? " Safe Mode (Công trình nhỏ / test)" : " Safe Mode (Small builds / testing)";
   const btnCancel = LANG_VI ? "Đóng / Hủy" : "Cancel";
 
   new ActionFormData()
@@ -263,8 +263,8 @@ function startSafe(player) {
       system.clearRun(id);
       player.sendMessage(
         LANG_VI
-          ? "§a[Bedrockmatica] Hoàn tất! Đã đặt toàn bộ " + total + " phần cấu trúc."
-          : "§a[Bedrockmatica] Done! All " + total + " structures placed."
+          ? "§a[Bedrockmatica] Đã đặt toàn bộ " + total + " phần cấu trúc."
+          : "§a[Bedrockmatica] Done all " + total + " structures placed."
       );
       return;
     }
