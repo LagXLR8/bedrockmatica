@@ -29,7 +29,8 @@ function base64ToUint8Array(base64) {
  *  - TP Mode: teleports player to each structure zone, waits for chunk load, then places.
  *  - Safe Mode: no teleport, places structures near the player only (for small builds).
  */
-export async function buildBedrockAddon(schematicsName, subStructures) {
+export async function buildBedrockAddon(schematicsName, subStructures, lang = 'vi') {
+  const isVi = lang === 'vi';
   const zip = new JSZip();
 
   const safeName = schematicsName.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -42,7 +43,9 @@ export async function buildBedrockAddon(schematicsName, subStructures) {
     format_version: 2,
     header: {
       name: `Bedrockmatica - ${schematicsName}`,
-      description: `Auto-generated Bedrockmatica structure builder pack for ${schematicsName}`,
+      description: isVi 
+        ? `Gói Behavior Pack tự động xây công trình cho ${schematicsName}`
+        : `Auto-generated Bedrockmatica structure builder pack for ${schematicsName}`,
       uuid: headerUUID,
       version: [1, 0, 0],
       min_engine_version: [1, 20, 0]
@@ -101,16 +104,22 @@ import { world, system } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 import { structuresData } from "./structures-data.js";
 
+const LANG_VI = ${isVi};
+
 // Welcome message
 try {
   world.afterEvents.playerSpawn.subscribe((event) => {
     if (event.initialSpawn) {
-      event.player.sendMessage("§a[Bedrockmatica] Pack Loaded! Right-click holding a Stick, Feather, or Compass to open GUI.");
+      event.player.sendMessage(
+        LANG_VI
+          ? "§a[Bedrockmatica] Đã tải pack! Cầm Stick, Feather hoặc Compass và bấm chuột phải (hoặc chạm giữ màn hình) để mở menu."
+          : "§a[Bedrockmatica] Pack Loaded! Right-click holding a Stick, Feather, or Compass to open GUI."
+      );
     }
   });
 } catch (e) {}
 
-// Item Right-Click Trigger
+// Item Right-Click / Tap-Hold Trigger
 try {
   world.afterEvents.itemUse.subscribe((event) => {
     const item = event.itemStack;
@@ -125,17 +134,25 @@ try {
 } catch (e) {}
 
 function openBuildUI(player) {
-  new ActionFormData()
-    .title("Bedrockmatica Auto-Builder")
-    .body(
-      "Schematic: " + structuresData.name +
+  const title = LANG_VI ? "Bedrockmatica - Tự Động Xây Dựng" : "Bedrockmatica - Auto-Builder";
+  const body = LANG_VI
+    ? "Schematic: " + structuresData.name +
+      "\\nSố phần nhỏ: " + structuresData.totalStructures +
+      "\\n\\n⚡ TP Mode: Dịch chuyển bạn đến từng khu vực để load chunk (Khuyên dùng cho công trình lớn).\\n🛡️ Safe Mode: Không dịch chuyển, chỉ xây khu vực xung quanh bạn.\\n\\n§e⚠️ Lưu ý: Hãy đứng im cho đến khi load xong, đừng di chuyển. Tốc độ xử lý tùy thuộc vào cấu hình máy."
+    : "Schematic: " + structuresData.name +
       "\\nSub-Structures: " + structuresData.totalStructures +
-      "\\n\\nTP Mode: Teleports you to each section for guaranteed chunk loading.\\n" +
-      "Safe Mode: No teleport, only builds in your current area."
-    )
-    .button("⚡ TP Mode (Recommended for large builds)")
-    .button("🛡️ Safe Mode (small builds / testing)")
-    .button("Cancel")
+      "\\n\\n⚡ TP Mode: Teleports you to each section for guaranteed chunk loading (Recommended for large builds).\\n🛡️ Safe Mode: No teleport, only builds in your immediate area.\\n\\n§e⚠️ Note: Please stand completely still until loading is finished. Processing speed depends on device performance.";
+
+  const btnTP = LANG_VI ? "⚡ TP Mode (Khuyên dùng)" : "⚡ TP Mode (Recommended)";
+  const btnSafe = LANG_VI ? "🛡️ Safe Mode (Công trình nhỏ / test)" : "🛡️ Safe Mode (Small builds / testing)";
+  const btnCancel = LANG_VI ? "Đóng / Hủy" : "Cancel";
+
+  new ActionFormData()
+    .title(title)
+    .body(body)
+    .button(btnTP)
+    .button(btnSafe)
+    .button(btnCancel)
     .show(player)
     .then((res) => {
       if (!res || res.canceled) return;
@@ -148,12 +165,6 @@ function openBuildUI(player) {
 }
 
 // ── TP MODE ────────────────────────────────────────────────────────────────
-// For each sub-structure:
-//   1. Teleport player to centre of that structure zone (forces chunk load)
-//   2. Wait LOAD_WAIT ticks for the chunk to fully load
-//   3. Run /structure load
-//   4. Move to next
-// After all done, teleport back to origin.
 function startTP(player) {
   const dim = player.dimension;
   const orig = player.location;
@@ -162,8 +173,16 @@ function startTP(player) {
   const oz = Math.floor(orig.z);
   const LOAD_WAIT = 20; // 1 second wait after TP
 
-  player.sendMessage("§a[Bedrockmatica] TP Mode started at (" + ox + "," + oy + "," + oz + ")");
-  player.sendMessage("§e[Bedrockmatica] You will be teleported around. This may take a while for large builds.");
+  player.sendMessage(
+    LANG_VI
+      ? "§a[Bedrockmatica] Chế độ TP đã bắt đầu tại (" + ox + "," + oy + "," + oz + ")"
+      : "§a[Bedrockmatica] TP Mode started at (" + ox + "," + oy + "," + oz + ")"
+  );
+  player.sendMessage(
+    LANG_VI
+      ? "§e[Bedrockmatica] Bạn sẽ được dịch chuyển qua các khu vực. Hãy đứng im cho đến khi load xong, không di chuyển."
+      : "§e[Bedrockmatica] You will be teleported around. Please stand still until finished, do not move."
+  );
 
   const structs = structuresData.structures;
   const total = structs.length;
@@ -176,12 +195,15 @@ function startTP(player) {
     if (idx >= total) {
       system.clearRun(id);
       try { dim.runCommand("tp @a " + ox + " " + oy + " " + oz); } catch(e) {}
-      player.sendMessage("§a[Bedrockmatica] Done! All " + total + " structures placed. Teleported back to origin.");
+      player.sendMessage(
+        LANG_VI
+          ? "§a[Bedrockmatica] Hoàn tất! Đã đặt toàn bộ " + total + " phần cấu trúc. Đã dịch chuyển về vị trí ban đầu."
+          : "§a[Bedrockmatica] Done! All " + total + " structures placed. Teleported back to origin."
+      );
       return;
     }
 
     const struct = structs[idx];
-    // Centre of this structure region in world coords
     const cx = ox + struct.offset.x + Math.floor(struct.size.x / 2);
     const cy = oy + struct.offset.y;
     const cz = oz + struct.offset.z + Math.floor(struct.size.z / 2);
@@ -211,15 +233,16 @@ function startTP(player) {
       idx++;
       phase = "tp";
       try {
-        player.onScreenDisplay.setActionBar("§e[Bedrockmatica] " + idx + " / " + total + " placed");
+        const text = LANG_VI
+          ? "§e[Bedrockmatica] Đang đặt: " + idx + " / " + total + " phần"
+          : "§e[Bedrockmatica] Placed: " + idx + " / " + total + " structures";
+        player.onScreenDisplay.setActionBar(text);
       } catch(e) {}
     }
   }, 1);
 }
 
 // ── SAFE MODE ───────────────────────────────────────────────────────────────
-// No teleport. Places 3 structures per tick. Only works if player is within
-// simulation distance (~128 blocks) of all structures.
 function startSafe(player) {
   const dim = player.dimension;
   const orig = player.location;
@@ -229,12 +252,20 @@ function startSafe(player) {
   const total = structuresData.structures.length;
   let idx = 0;
 
-  player.sendMessage("§a[Bedrockmatica] Safe Mode started at (" + ox + "," + oy + "," + oz + ")");
+  player.sendMessage(
+    LANG_VI
+      ? "§a[Bedrockmatica] Safe Mode đã bắt đầu tại (" + ox + "," + oy + "," + oz + ")"
+      : "§a[Bedrockmatica] Safe Mode started at (" + ox + "," + oy + "," + oz + ")"
+  );
 
   const id = system.runInterval(() => {
     if (idx >= total) {
       system.clearRun(id);
-      player.sendMessage("§a[Bedrockmatica] Done! All " + total + " structures placed.");
+      player.sendMessage(
+        LANG_VI
+          ? "§a[Bedrockmatica] Hoàn tất! Đã đặt toàn bộ " + total + " phần cấu trúc."
+          : "§a[Bedrockmatica] Done! All " + total + " structures placed."
+      );
       return;
     }
     for (let b = 0; b < 3 && idx < total; b++) {
@@ -251,7 +282,10 @@ function startSafe(player) {
       }
     }
     try {
-      player.onScreenDisplay.setActionBar("§e[Bedrockmatica] " + idx + " / " + total + " placed");
+      const text = LANG_VI
+        ? "§e[Bedrockmatica] Đang đặt: " + idx + " / " + total + " phần"
+        : "§e[Bedrockmatica] Placed: " + idx + " / " + total + " structures";
+      player.onScreenDisplay.setActionBar(text);
     } catch(e) {}
   }, 1);
 }

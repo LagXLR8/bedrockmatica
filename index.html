@@ -6,20 +6,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bedrockmatica - Litematica to Bedrock Converter</title>
   <meta name="description"
-    content="Chuyển đổi file .litematic sang Bedrock .mcaddon cho Minecraft Bedrock 1.21.1+ trực tiếp trên trình duyệt." />
+    content="Chuyển đổi file .litematic sang Bedrock .mcaddon cho Minecraft Bedrock 1.20.1+ trực tiếp trên trình duyệt." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="./src/style.css" />
-  <link rel="icon" type="bedrockmatica/png" href="logo.png">
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
 
 <body>
 
   <!-- Cyber Grid Background -->
   <div class="cyber-grid"></div>
+
+  <!-- Language Selection Modal (Opens on first visit or when clicking language button) -->
+  <div id="lang-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-icon-badge">🌐</div>
+        <h3 class="modal-title" id="modal-title">Chọn ngôn ngữ / Select Language</h3>
+        <p class="modal-sub" id="modal-sub">Vui lòng chọn ngôn ngữ giao diện và thông báo mod trong game.<br>Please choose your preferred language for UI and in-game mod messages.</p>
+      </div>
+      <div class="lang-options">
+        <button id="select-lang-vi" class="btn-lang-option" type="button">
+          <span class="flag-icon">🇻🇳</span>
+          <div class="lang-option-text">
+            <strong>Tiếng Việt</strong>
+            <span>Giao diện & thông báo tiếng Việt</span>
+          </div>
+        </button>
+        <button id="select-lang-en" class="btn-lang-option" type="button">
+          <span class="flag-icon">🇬🇧</span>
+          <div class="lang-option-text">
+            <strong>English</strong>
+            <span>UI & In-game English messages</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Main macOS Glass Window -->
   <div class="window" id="main-window">
@@ -33,11 +60,15 @@
       </div>
       <div class="window-title-container">
         <span class="window-title">Bedrockmatica</span>
-        <span class="neon-badge">1.20.1+</span>
+        <span class="neon-badge" id="badge-version">1.20.1+</span>
       </div>
       <div class="titlebar-actions">
+        <button id="lang-switch-btn" class="lang-pill" type="button" title="Đổi ngôn ngữ / Switch Language">
+          <span id="header-lang-flag">🇻🇳</span>
+          <span id="header-lang-code">VI</span>
+        </button>
         <span class="status-pill online">
-          <span class="dot"></span> Client-Side
+          <span class="dot"></span> <span id="status-client-text">Client-Side</span>
         </span>
       </div>
     </div>
@@ -60,9 +91,8 @@
             </svg>
           </div>
           <div class="drop-text-group">
-            <p class="drop-title">Kéo thả file <code class="cyber-code">.litematic</code> vào đây</p>
-            <p class="drop-sub">hoặc <button id="browse-btn" class="neon-link-btn" type="button">chọn file từ
-                máy</button></p>
+            <p class="drop-title" id="drop-title">Kéo thả file <code class="cyber-code">.litematic</code> vào đây</p>
+            <p class="drop-sub" id="drop-sub">hoặc <button id="browse-btn" class="neon-link-btn" type="button">chọn file từ máy</button></p>
           </div>
         </div>
       </div>
@@ -80,7 +110,7 @@
             <div class="progress-track">
               <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
             </div>
-            <p class="progress-sub-text">Đang tạo gói và điều chỉnh block id</p>
+            <p id="progress-sub-desc" class="progress-sub-text">Đang tạo gói Behavior Pack và mã hóa NBT structures...</p>
           </div>
         </div>
       </div>
@@ -98,16 +128,16 @@
               </svg>
             </div>
             <div class="result-header-text">
-              <h3 class="result-title">Chuyển đổi thành công</h3>
-              <p class="result-subtitle">Sẵn sàng xuất gói Addon</p>
+              <h3 class="result-title" id="result-title">Chuyển đổi thành công</h3>
+              <p class="result-subtitle" id="result-subtitle">Sẵn sàng xuất gói Addon</p>
             </div>
           </div>
 
           <!-- Pack Name Customization Section -->
           <div class="pack-name-section">
             <label for="pack-name-input" class="input-label">
-              <span>Tên addon sẽ hiển thị</span>
-              <span class="input-sub-hint">Có thể chỉnh sửa tên file .mcaddon</span>
+              <span id="label-pack-name">Tên addon sẽ hiển thị</span>
+              <span class="input-sub-hint" id="hint-pack-name">Có thể chỉnh sửa tên file .mcaddon</span>
             </label>
             <div class="input-wrapper">
               <div class="input-prefix-icon">
@@ -126,12 +156,12 @@
           <!-- Schematic Info HUD (Clean Dimensions & Target Version) -->
           <div class="stats-grid">
             <div class="stat-card">
-              <span class="stat-label">KÍCH THƯỚC</span>
+              <span class="stat-label" id="label-stat-dimensions">KÍCH THƯỚC</span>
               <span class="stat-value" id="stat-dimensions">0 × 0 × 0</span>
             </div>
             <div class="stat-card">
-              <span class="stat-label">PHIÊN BẢN</span>
-              <span class="stat-value highlight-cyan" id="stat-palette">1.21.1</span>
+              <span class="stat-label" id="label-stat-version">PHIÊN BẢN</span>
+              <span class="stat-value highlight-cyan" id="stat-palette">1.20.1+</span>
             </div>
           </div>
 
@@ -144,7 +174,7 @@
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              <span>Tải xuống .mcaddon</span>
+              <span id="download-btn-text">Tải xuống .mcaddon</span>
             </button>
             <button id="reset-btn" class="btn-neon-ghost" type="button">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -152,7 +182,7 @@
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
               </svg>
-              <span>Chọn file litematica khác</span>
+              <span id="reset-btn-text">Chọn file litematica khác</span>
             </button>
           </div>
 
@@ -162,7 +192,7 @@
       <!-- Quick Guide Section (macOS style with clear high-contrast text) -->
       <div class="guide-panel">
         <div class="guide-header">
-          <span class="guide-title">HƯỚNG DẪN SỬ DỤNG</span>
+          <span class="guide-title" id="guide-main-title">HƯỚNG DẪN SỬ DỤNG</span>
           <span class="guide-badge">MCPE / BEDROCK</span>
         </div>
 
@@ -170,39 +200,33 @@
           <div class="step-item">
             <div class="step-neon-num">01</div>
             <div class="step-content">
-              <strong>Kéo thả & Tùy chỉnh tên</strong>
-              <p>Tải file <code>.litematic</code> của bạn lên, sau đó nhập tên mong muốn cho Addon rồi nhấn tải về.</p>
+              <strong id="step1-title">Kéo thả & Tùy chỉnh tên</strong>
+              <p id="step1-desc">Tải file <code>.litematic</code> của bạn lên, sau đó nhập tên mong muốn cho Addon rồi nhấn tải về.</p>
             </div>
           </div>
 
           <div class="step-item">
             <div class="step-neon-num">02</div>
             <div class="step-content">
-              <strong>Tải & Mở file .mcaddon</strong>
-              <p>Mở file <code>.mcaddon</code> vừa tải, Minecraft Bedrock sẽ tự động import vào game (hoặc giải nén thư
-                mục <code>_bp</code> vào thư mục game).</p>
+              <strong id="step2-title">Tải & Mở file .mcaddon</strong>
+              <p id="step2-desc">Mở file <code>.mcaddon</code> vừa tải, Minecraft Bedrock sẽ tự động import vào game (hoặc giải nén thư mục <code>_bp</code> vào thư mục game).</p>
             </div>
           </div>
 
           <div class="step-item">
             <div class="step-neon-num">03</div>
             <div class="step-content">
-              <strong>Kích hoạt trong World</strong>
-              <p>Vào cài đặt World rồi vào <em>Behavior Pack</em> sau đó thêm cái file vừa tải vào. Sau đó bật <em
-                  class="neon-text-cyan">Beta APIs</em>
-                trong phần Thử nghiệm (Experiments).</p>
+              <strong id="step3-title">Kích hoạt trong World</strong>
+              <p id="step3-desc">Vào cài đặt World rồi vào <em>Behavior Pack</em> sau đó thêm file vừa tải vào. Sau đó bật <em class="neon-text-cyan">Beta APIs</em> trong phần Thử nghiệm (Experiments).</p>
             </div>
           </div>
 
           <div class="step-item">
             <div class="step-neon-num">04</div>
             <div class="step-content">
-              <strong>Cách sử dụng</strong>
-              <p>Cầm <strong class="neon-text-pink">Stick</strong>, <strong class="neon-text-pink">Feather</strong> hoặc
-                <strong class="neon-text-pink">Compass</strong> nhấp chuột phải(đè/giữ vào màn hình điện thoại) để mở
-                menu, chọn <em>TP
-                  Mode</em> để bắt đầu, lưu ý là hãy bay lên 1 khoản và không di chuyển đến khi nó chạy xong.
-              </p>
+              <strong id="step4-title">Cách sử dụng & Lưu ý quan trọng</strong>
+              <p id="step4-desc">Cầm <strong class="neon-text-pink">Stick</strong>, <strong class="neon-text-pink">Feather</strong> hoặc <strong class="neon-text-pink">Compass</strong> nhấp chuột phải (đè/giữ vào màn hình điện thoại) để mở menu, chọn <em>TP Mode</em> để bắt đầu.</p>
+              <p class="guide-note" id="step4-note">⚠️ <strong>Lưu ý:</strong> Hãy đứng im cho đến khi load xong đừng di chuyển, tốc độ xử lý và load schematic tùy thuộc vào cấu hình máy.</p>
             </div>
           </div>
         </div>

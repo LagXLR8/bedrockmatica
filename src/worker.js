@@ -3,21 +3,28 @@ import { sliceRegionToBedrockStructures } from './utils/structure-slicer.js';
 import { buildBedrockAddon } from './utils/addon-builder.js';
 
 self.onmessage = async (event) => {
-  const { fileBuffer, maxChunkSize = 64, fileName = '' } = event.data;
+  const { fileBuffer, maxChunkSize = 64, fileName = '', lang = 'vi' } = event.data;
+  const isVi = lang === 'vi';
 
   try {
-    self.postMessage({ type: 'progress', percent: 15, status: 'Phân tích dữ liệu Litematica NBT...' });
+    self.postMessage({
+      type: 'progress',
+      percent: 15,
+      status: isVi ? 'Phân tích dữ liệu Litematica NBT...' : 'Parsing Litematica NBT data...'
+    });
     const parsed = parseLitematic(fileBuffer);
 
     if (!parsed.regions || parsed.regions.length === 0) {
-      throw new Error('Không tìm thấy vùng cấu trúc (Region) hợp lệ trong file .litematic.');
+      throw new Error(isVi ? 'Không tìm thấy vùng cấu trúc (Region) hợp lệ trong file .litematic.' : 'No valid regions found in .litematic file.');
     }
 
     const region = parsed.regions[0];
     self.postMessage({
       type: 'progress',
       percent: 40,
-      status: `Đang cắt lát (${region.width}×${region.height}×${region.length}) thành các khối ≤ ${maxChunkSize}...`
+      status: isVi 
+        ? `Đang cắt lát (${region.width}×${region.height}×${region.length}) thành các khối ≤ ${maxChunkSize}...`
+        : `Slicing (${region.width}×${region.height}×${region.length}) into blocks ≤ ${maxChunkSize}...`
     });
 
     const subStructures = sliceRegionToBedrockStructures(region, maxChunkSize);
@@ -25,11 +32,12 @@ self.onmessage = async (event) => {
     self.postMessage({
       type: 'progress',
       percent: 75,
-      status: `Đang mã hóa ${subStructures.length} cấu trúc Bedrock & tạo .mcaddon...`
+      status: isVi 
+        ? `Đang mã hóa ${subStructures.length} cấu trúc Bedrock & tạo .mcaddon...`
+        : `Encoding ${subStructures.length} Bedrock structures & building .mcaddon...`
     });
 
     // Determine initial clean schematic name:
-    // If metadata name is empty, 'Unnamed', 'unnamed', or 'Litematica Schem', fallback to uploaded fileName
     let schematicName = parsed.metadata.name;
     if (
       !schematicName || 
@@ -40,12 +48,12 @@ self.onmessage = async (event) => {
       schematicName = fileName || 'My_Schematic';
     }
 
-    const addonBlob = await buildBedrockAddon(schematicName, subStructures);
+    const addonBlob = await buildBedrockAddon(schematicName, subStructures, lang);
 
     self.postMessage({
       type: 'complete',
       percent: 100,
-      status: 'Chuyển đổi hoàn tất!',
+      status: isVi ? 'Chuyển đổi hoàn tất!' : 'Conversion complete!',
       result: {
         schematicName: schematicName,
         author: parsed.metadata.author || 'Unknown',
@@ -60,7 +68,7 @@ self.onmessage = async (event) => {
   } catch (err) {
     self.postMessage({
       type: 'error',
-      error: err.message || 'Đã xảy ra lỗi trong quá trình chuyển đổi.'
+      error: err.message || (isVi ? 'Đã xảy ra lỗi trong quá trình chuyển đổi.' : 'An error occurred during conversion.')
     });
   }
 };
