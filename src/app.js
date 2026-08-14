@@ -116,12 +116,12 @@ downloadBtn.addEventListener('click', async (e) => {
     }
   }
 
-  // Trigger browser download with .mcpack extension for instant Minecraft Bedrock import
+  // Trigger browser download with .mcaddon extension
   const binaryBlob = new Blob([blobToDownload], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(binaryBlob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${safeFileName}.mcpack`;
+  a.download = `${safeFileName}.mcaddon`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
