@@ -205,7 +205,7 @@ function showDone(result, fallbackFileName) {
     statDimensions.textContent = `${dims.width} × ${dims.height} × ${dims.length}`;
   }
   if (statPalette) {
-    statPalette.textContent = '1.20.1 đến bản mới nhất';
+    statPalette.textContent = '1.20.1+';
   }
 }
 
