@@ -6,7 +6,7 @@
 
 ---
 
-## Tính năng nổi bật
+## Tính năng
 
 - **100% Client-Side:** Toàn bộ quá trình đọc file NBT, dịch Block State, cắt lát cấu trúc và đóng gói file `.mcaddon` đều diễn ra trực tiếp trên trình duyệt của bạn bằng Web Worker. Không có bất kỳ dữ liệu nào được tải lên server.
 - **Tự động chia nhỏ cấu trúc:** Tự động cắt các công trình Litematica lớn thành các mảnh `.mcstructure` chuẩn giới hạn của Minecraft Bedrock.
@@ -17,7 +17,7 @@
 
 ## Hướng dẫn sử dụng
 
-### Bước 1: Chuyển đổi và Tải Addon
+### Bước 1: Cách sử dụng trang web
 1. Truy cập [https://lagxlr8.github.io/bedrockmatica/](https://lagxlr8.github.io/bedrockmatica/).
 2. Chọn ngôn ngữ mong muốn (Tiếng Việt hoặc English).
 3. Kéo thả file `.litematic` của bạn vào ô tải lên.
@@ -31,7 +31,7 @@
   - **iOS:** `Tệp > Trên iPhone > Minecraft > games > com.mojang > behavior_packs`
   - **Windows:** `%localappdata%\Packages\Microsoft.MinecraftUWP\LocalState\games\com.mojang\behavior_packs`
 
-### Bước 3: Kích hoạt trong Thế giới (World)
+### Bước 3: Thêm vào Thế giới (World)
 1. Vào **Cài đặt Thế giới (World Settings)** sau đó chọn mục **Behavior Packs** rồi Kích hoạt (Activate) gói Bedrockmatica vừa thêm.
 2. Vào mục **Thử nghiệm (Experiments)** rồi tìm và bật **Beta APIs**.
 
